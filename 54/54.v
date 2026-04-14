@@ -1,6 +1,8 @@
 
 Require Import Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
+Require Import Coq.Arith.Arith.
+Require Import Coq.micromega.Lia.
 
 Open Scope string_scope.
 
@@ -132,8 +134,35 @@ Inductive IsBetterCombo : Combo -> Combo -> Prop :=
   | RoyalFlushStraighFlush : IsBetterCombo RoyalFlush StraighFlush  
   | Trans2 : forall (cb1 cb2 cb3: Combo), 
     IsBetterCombo cb1 cb2 -> IsBetterCombo cb2 cb3 -> IsBetterCombo cb1 cb3.
-    
-  
+
+Definition combo_rank (c : Combo) : nat :=
+  match c with
+  | Pair => 1
+  | TwoPairs => 2
+  | Triple => 3
+  | Straight => 4
+  | Flush => 5
+  | FullHouse => 6
+  | Four => 7
+  | StraighFlush => 8
+  | RoyalFlush => 9
+  end.
+
+Lemma IsBetterCombo_rank : forall c1 c2, IsBetterCombo c1 c2 -> combo_rank c1 > combo_rank c2.
+Proof.
+  intros c1 c2 H.
+  induction H.
+  - simpl; lia.
+  - simpl; lia.
+  - simpl; lia.
+  - simpl; lia.
+  - simpl; lia.
+  - simpl; lia.
+  - simpl; lia.
+  - simpl; lia.
+  - simpl; lia.
+Qed.
+
 (**
 High Card: Highest value card.
 One Pair: Two cards of the same value.
@@ -271,4 +300,12 @@ Proof. apply Trans2 with FullHouse.
   apply TripleBeatsPair.
   Qed.
   
-
+  
+Theorem TripleIsNotBetterThanTwoPairs :
+  ~ IsBetterCombo TwoPairs Triple.
+Proof.
+  intros H.
+  pose proof (IsBetterCombo_rank TwoPairs Triple H) as Hr.
+  simpl in Hr.
+  lia.
+Qed.
