@@ -112,6 +112,7 @@ Definition HandContains (h : Hand) (cd : Card) :=
   ~ AppearNb cd h 0.
   
 Inductive Combo :=
+  | HighCard
   | Pair
   | TwoPairs
   | Triple
@@ -137,6 +138,7 @@ Inductive IsBetterCombo : Combo -> Combo -> Prop :=
 
 Definition combo_rank (c : Combo) : nat :=
   match c with
+  | HighCard => 0
   | Pair => 1
   | TwoPairs => 2
   | Triple => 3
@@ -217,6 +219,7 @@ Definition IsRoyalFlush (h : Hand) :=
  IsStraighFlush h /\ HandContains h (CardC Ac H).
 
 Inductive ContainsCombo : Hand -> Combo -> Prop :=
+  | ContainsHighCard : forall (h : Hand), ContainsCombo h HighCard
   | ContainsPair : forall (h : Hand), IsPair h -> ContainsCombo h Pair
   | ContainsTwoPairs : forall (h : Hand), IsTwoPairs h -> ContainsCombo h TwoPairs
   | ContainsTriple : forall (h : Hand), IsTriple h -> ContainsCombo h Triple
@@ -299,13 +302,46 @@ Proof. apply Trans2 with FullHouse.
   constructor.
   apply TripleBeatsPair.
   Qed.
-  
+
+Check IsBetterCombo_rank.
   
 Theorem TripleIsNotBetterThanTwoPairs :
   ~ IsBetterCombo TwoPairs Triple.
 Proof.
   intros H.
-  pose proof (IsBetterCombo_rank TwoPairs Triple H) as Hr.
-  simpl in Hr.
+  apply IsBetterCombo_rank in H.
+  simpl in H.
   lia.
 Qed.
+
+Theorem RoyalFlushHighestComboBeatsStraight :
+  forall (h1 h2 : Hand),
+  HighestCombo h1 RoyalFlush ->
+  HighestCombo h2 Straight ->
+  IsHigherRanked h1 h2.
+Proof.
+  intros.
+  apply BetterCombo. exists RoyalFlush. exists Straight. intros. assumption. Qed.
+  
+Theorem AllHandContainsCombo :
+  forall (h : Hand), exists (cb : Combo), ContainsCombo h cb.
+Proof.
+  intros. exists HighCard. constructor. Qed.
+  
+Theorem AllHandContainsHighestCombo :
+  forall (h : Hand), exists (cb : Combo), HighestCombo h cb.
+Proof.
+  intros. destruct h.
+  -
+  
+  
+
+Theorem RoyalFlushHighestComboBeatsAll :
+  forall (h1 h2 : Hand) (cb : Combo),
+  HighestCombo h1 RoyalFlush ->
+  ~ HighestCombo h2 RoyalFlush ->
+  IsHigherRanked h1 h2.
+Proof.
+  intros. apply BetterCombo. exists RoyalFlush.
+  pose proof (AllHandContainsHighestCombo h2).
+  destruct H3. exists x. intros. assumption. Qed.
