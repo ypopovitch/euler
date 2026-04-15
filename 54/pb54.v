@@ -44,8 +44,8 @@ Inductive Card :=
     | CardC (v : Value) (c : Color).
 
 Inductive Hand :=
-  | EmptyHand
-  | H2 (cd : Card) (h : Hand).
+  | SoloHand (cd : Card)
+  | MultiHand (cd : Card) (h : Hand).
   
 Inductive EqCardVal : Card -> Card -> Prop :=
   | EqCardValSame : forall (v : Value) (c1 c2 : Color), 
@@ -61,35 +61,44 @@ Inductive CardContainsColor : Color -> Card -> Prop :=
 Inductive HandContainsColor : Color -> Hand -> Prop :=
   | HandContainsColorHead : forall (cd : Card) (h : Hand) (c : Color),
     CardContainsColor c cd ->
-    HandContainsColor c (H2 cd h)
+    HandContainsColor c (MultiHand cd h)
   | HandContainsColorTail : forall (cd : Card)  (h : Hand) (c : Color),
     HandContainsColor c h ->
-    HandContainsColor c (H2 cd h).
+    HandContainsColor c (MultiHand cd h).
     
 Definition DiffColor (c1 c2 : Color) :=
   forall (h : Hand), HandContainsColor c1 h /\ (~ HandContainsColor c2 h).
   
 Fixpoint HandLen (h : Hand) : nat :=
   match h with
-  | EmptyHand => 0
-  | H2 cd h' => 1 + (HandLen h')
+  | SoloHand cd => 1
+  | MultiHand cd h' => 1 + (HandLen h')
   end.
   
+(*
 Inductive CardNbVal : Card -> Hand -> nat -> Prop :=
   | CardNbValFound : forall (cd1 cd2 : Card) (h : Hand) (n : nat),
     EqCardVal cd1 cd2 ->
-    CardNbVal cd1 (H2 cd2 h) n ->
+    CardNbVal cd1 (MultiHand cd2 h) n ->
     CardNbVal cd1 h (n+1)
   | CardNbValNotFound : forall (cd1 cd2 : Card) (h : Hand) (n : nat),
     (~ EqCardVal cd1 cd2) ->
-    CardNbVal cd1 (H2 cd2 h) n ->
+    CardNbVal cd1 (MultiHand cd2 h) n ->
     CardNbVal cd1 h n.
+*)
     
 Definition FiveCardInHand (h : Hand) :=
   HandLen h = 5.
   
+(*
 Definition AppearNb (cd : Card) (h : Hand) (n : nat) :=
   CardNbVal cd h 0 /\ CardNbVal cd EmptyHand n.
+*)
+
+Definition AppearNb (cd : Card) (h : Hand) (n : nat) :=
+  match h with
+  | SoloHand cd => 1
+  | MultiHand cd h => 1 + AppearNb
     
 Inductive Game :=
   | GameC (h1 h2 : Hand) (H1 : HandLen h1 = 5) (H2 : HandLen h2 = 5).
@@ -219,7 +228,7 @@ Definition IsRoyalFlush (h : Hand) :=
  IsStraighFlush h /\ HandContains h (CardC Ac H).
 
 Inductive ContainsCombo : Hand -> Combo -> Prop :=
-  | ContainsHighCard : forall (h : Hand), ContainsCombo h HighCard
+  | ContainsHighCard : forall (cd : Card) (h : Hand), ContainsCombo (H2 cd h) HighCard
   | ContainsPair : forall (h : Hand), IsPair h -> ContainsCombo h Pair
   | ContainsTwoPairs : forall (h : Hand), IsTwoPairs h -> ContainsCombo h TwoPairs
   | ContainsTriple : forall (h : Hand), IsTriple h -> ContainsCombo h Triple
@@ -326,7 +335,7 @@ Proof.
 Theorem AllHandContainsCombo :
   forall (h : Hand), exists (cb : Combo), ContainsCombo h cb.
 Proof.
-  intros. exists HighCard. constructor. Qed.
+  intros. destruct h.
   
 Theorem AllHandContainsHighestCombo :
   forall (h : Hand), exists (cb : Combo), HighestCombo h cb.
