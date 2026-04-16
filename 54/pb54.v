@@ -96,9 +96,8 @@ Definition AppearNb (cd : Card) (h : Hand) (n : nat) :=
 *)
 
 Definition AppearNb (cd : Card) (h : Hand) (n : nat) :=
-  match h with
-  | SoloHand cd => 1
-  | MultiHand cd h => 1 + AppearNb
+True. (* TODO *)
+
     
 Inductive Game :=
   | GameC (h1 h2 : Hand) (H1 : HandLen h1 = 5) (H2 : HandLen h2 = 5).
@@ -228,7 +227,7 @@ Definition IsRoyalFlush (h : Hand) :=
  IsStraighFlush h /\ HandContains h (CardC Ac H).
 
 Inductive ContainsCombo : Hand -> Combo -> Prop :=
-  | ContainsHighCard : forall (cd : Card) (h : Hand), ContainsCombo (H2 cd h) HighCard
+  | ContainsHighCard : forall (h : Hand), ContainsCombo h HighCard
   | ContainsPair : forall (h : Hand), IsPair h -> ContainsCombo h Pair
   | ContainsTwoPairs : forall (h : Hand), IsTwoPairs h -> ContainsCombo h TwoPairs
   | ContainsTriple : forall (h : Hand), IsTriple h -> ContainsCombo h Triple
@@ -335,13 +334,12 @@ Proof.
 Theorem AllHandContainsCombo :
   forall (h : Hand), exists (cb : Combo), ContainsCombo h cb.
 Proof.
-  intros. destruct h.
+  intros. exists HighCard. constructor. Qed.
   
 Theorem AllHandContainsHighestCombo :
   forall (h : Hand), exists (cb : Combo), HighestCombo h cb.
 Proof.
-  intros. destruct h.
-  -
+Admitted.
   
   
 
