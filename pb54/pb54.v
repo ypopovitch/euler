@@ -74,30 +74,49 @@ Fixpoint HandLen (h : Hand) : nat :=
   | SoloHand cd => 1
   | MultiHand cd h' => 1 + (HandLen h')
   end.
-  
-(*
-Inductive CardNbVal : Card -> Hand -> nat -> Prop :=
-  | CardNbValFound : forall (cd1 cd2 : Card) (h : Hand) (n : nat),
-    EqCardVal cd1 cd2 ->
-    CardNbVal cd1 (MultiHand cd2 h) n ->
-    CardNbVal cd1 h (n+1)
-  | CardNbValNotFound : forall (cd1 cd2 : Card) (h : Hand) (n : nat),
-    (~ EqCardVal cd1 cd2) ->
-    CardNbVal cd1 (MultiHand cd2 h) n ->
-    CardNbVal cd1 h n.
-*)
     
 Definition FiveCardInHand (h : Hand) :=
   HandLen h = 5.
+
+Definition CardVal (cd : Card) :=
+  match cd with
+  | CardC v c => v
+  end.
+
+Definition CardColor (cd : Card) :=
+  match cd with
+  | CardC v c => c
+  end.
+
+Definition EqCardValb (cd1 cd2 : Card) : bool :=
+  match CardC (CardVal cd1) (CardColor cd1) with
+  | CardC Ac _ => match CardC (CardVal cd2) (CardColor cd2) with | CardC Ac _ => true | _ => false end
+  | CardC Ki _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC Ki _ => true | _ => false end
+  | CardC Qu _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC Qu _ => true | _ => false end
+  | CardC Ja _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC Ja _ => true | _ => false end
+  | CardC Te _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC Te _ => true | _ => false end
+  | CardC N9 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N9 _ => true | _ => false end
+  | CardC N8 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N8 _ => true | _ => false end
+  | CardC N7 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N7 _ => true | _ => false end
+  | CardC N6 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N6 _ => true | _ => false end
+  | CardC N5 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N5 _ => true | _ => false end
+  | CardC N4 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N4 _ => true | _ => false end
+  | CardC N3 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N3 _ => true | _ => false end
+  | CardC N2 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N2 _ => true | _ => false end
+  | CardC N1 _ => match CardC (CardVal cd2) (CardColor cd2)  with | CardC N1 _ => true | _ => false end
+  end.
   
-(*
-Definition AppearNb (cd : Card) (h : Hand) (n : nat) :=
-  CardNbVal cd h 0 /\ CardNbVal cd EmptyHand n.
-*)
-
-Definition AppearNb (cd : Card) (h : Hand) (n : nat) :=
-True. (* TODO *)
-
+Fixpoint AppearNb (cd : Card) (h : Hand) : nat :=
+  match h with
+  | SoloHand cd' => match EqCardValb cd cd' with
+                    | true => 1
+                    | false => 0
+                    end
+  | MultiHand cd' h' => match EqCardValb cd cd' with
+                        | true => 1 + AppearNb cd h'
+                        | false => 0 + AppearNb cd h'
+                        end
+  end.
     
 Inductive Game :=
   | GameC (h1 h2 : Hand) (H1 : HandLen h1 = 5) (H2 : HandLen h2 = 5).
@@ -117,7 +136,7 @@ Definition IsDirectAboveVal (cd1 cd2 : Card) :=
   (~ exists (cd3 : Card), IsHigherValue cd1 cd3 /\ IsHigherValue cd3 cd2).
   
 Definition HandContains (h : Hand) (cd : Card) :=
-  ~ AppearNb cd h 0.
+  AppearNb cd h > 0.
   
 Inductive Combo :=
   | HighCard
@@ -132,7 +151,20 @@ Inductive Combo :=
   | RoyalFlush
   .
   
+(**
+High Card: Highest value card.
+One Pair: Two cards of the same value.
+Two Pairs: Two different pairs.
+Three of a Kind: Three cards of the same value.
+Straight: All cards are consecutive values.
+Flush: All cards of the same suit.
+Full House: Three of a kind and a pair.
+Four of a Kind: Four cards of the same value.
+Straight Flush: All cards are consecutive values of same suit.
+Royal Flush: Ten, Jack, Queen, King, Ace, in same suit.
+**)
 Inductive IsBetterCombo : Combo -> Combo -> Prop :=
+  | PairHighCard : IsBetterCombo Pair HighCard
   | TwoPairsPairs : IsBetterCombo TwoPairs Pair
   | TripleTwoPairs : IsBetterCombo Triple TwoPairs
   | StraightTriple : IsBetterCombo Straight Triple
@@ -158,34 +190,6 @@ Definition combo_rank (c : Combo) : nat :=
   | RoyalFlush => 9
   end.
 
-Lemma IsBetterCombo_rank : forall c1 c2, IsBetterCombo c1 c2 -> combo_rank c1 > combo_rank c2.
-Proof.
-  intros c1 c2 H.
-  induction H.
-  - simpl; lia.
-  - simpl; lia.
-  - simpl; lia.
-  - simpl; lia.
-  - simpl; lia.
-  - simpl; lia.
-  - simpl; lia.
-  - simpl; lia.
-  - simpl; lia.
-Qed.
-
-(**
-High Card: Highest value card.
-One Pair: Two cards of the same value.
-Two Pairs: Two different pairs.
-Three of a Kind: Three cards of the same value.
-Straight: All cards are consecutive values.
-Flush: All cards of the same suit.
-Full House: Three of a kind and a pair.
-Four of a Kind: Four cards of the same value.
-Straight Flush: All cards are consecutive values of same suit.
-Royal Flush: Ten, Jack, Queen, King, Ace, in same suit.
-**)
-
 Inductive EqCombo : Combo -> Combo -> Prop :=
   | EqComboC : forall (cb : Combo), EqCombo cb cb.
 
@@ -204,16 +208,16 @@ Inductive DirectlyBelowCombo : Combo -> Combo -> Prop :=
     DirectlyBelowCombo cb2 cb1.
 
 Definition IsPair (h : Hand) :=
-  exists (cd : Card), AppearNb cd h 2.
+  exists (cd : Card), AppearNb cd h  = 2.
  
 Definition IsTwoPairs (h : Hand) :=
   exists (cd1 cd2 : Card), 
-  AppearNb cd1 h 2 -> 
-  AppearNb cd1 h 2 ->
+  AppearNb cd1 h = 2 -> 
+  AppearNb cd1 h = 2 ->
   DiffCardVal cd1 cd2.
   
 Definition IsTriple (h : Hand) :=
-  exists (cd : Card), AppearNb cd h 3.
+  exists (cd : Card), AppearNb cd h = 3.
   
 Definition IsStraight (h : Hand) :=
   exists (cd1 cd2 cd3 cd4 cd5 : Card),
@@ -231,11 +235,11 @@ Definition IsFlush (h : Hand) :=
 Definition IsFullHouse (h : Hand) :=
   exists (cd1 cd2 : Card),
   DiffCardVal cd1 cd2 ->
-  AppearNb cd1 h 3 ->
-  AppearNb cd2 h 2.
+  AppearNb cd1 h = 3 ->
+  AppearNb cd2 h = 2.
   
 Definition IsFour (h : Hand) :=
-  exists (cd : Card), AppearNb cd h 4.
+  exists (cd : Card), AppearNb cd h = 4.
   
 Definition IsStraighFlush (h : Hand) :=
  IsStraight h /\ IsFlush h.
@@ -260,7 +264,7 @@ Definition HighestCombo (h : Hand) (cb : Combo) :=
   ~ (exists (cb2 : Combo), ContainsCombo h cb2 /\ IsBetterCombo cb cb2).
   
 Definition ContainsCard (h : Hand) (cd : Card) :=
-  AppearNb cd h 1.
+  AppearNb cd h = 1.
   
 Inductive IsBestCardHigher : Hand -> Hand -> Prop :=
   | BestCardHigher : forall (h1 h2 : Hand),
