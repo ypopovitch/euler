@@ -291,6 +291,35 @@ Inductive IsHigherRanked : Hand -> Hand -> Prop :=
     TieRank h1 h2 ->
     IsBestCardHigher h1 h2 ->
     IsHigherRanked h1 h2.
+
+Definition ValRank (v : Value) :=
+  match v with
+  | Ac => 14
+  | Ki => 13
+  | Qu => 12
+  | Ja => 11
+  | Te => 10
+  | N9 => 9
+  | N8 => 8
+  | N7 => 7
+  | N6 => 6
+  | N5 => 5
+  | N4 => 4
+  | N3 => 3
+  | N2 => 2
+  | N1 => 1
+  end.
+
+Definition CardRank (cd : Card) :=
+  match cd with
+  | CardC val _ => ValRank val
+  end.
+
+
+(* TODO 
+Fixpoint HandRank (h : Hand) := 0
+highest combo rank * (card nb + 1) + highest card rank
+*)
     
 Definition PlayerOneWins (g : Game) :=
   match g with
@@ -311,3 +340,4 @@ Inductive GetNbOfPlayerOneWinsStep : GameSuite -> nat -> Prop :=
     PlayerOneDontWins g ->
     GetNbOfPlayerOneWinsStep (G2 g gs) 0 ->
     GetNbOfPlayerOneWinsStep gs 0.
+
