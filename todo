@@ -1,9 +1,34 @@
-Ajouter le lemme
-Lemma rank_IsBetterCombo : forall c1 c2,
-  combo_rank c1 > combo_rank c2 -> IsBetterCombo c1 c2.
+ajout well_defined
 
-Ce qui permet d'ajouter l'équivalence 
-Lemma IsBetterCombo_iff : forall c1 c2,
-  IsBetterCombo c1 c2 <-> combo_rank c1 > combo_rank c2.
+---
 
-Et ensuite toutes les preuve se font directement avec lia après avoir convertit les combo en rank
+Specifications white box
+- Highest combo
+- Contains Card
+- TieRank
+- Well_defined
+
+---
+
+Specifications black box
+- IsHigherRanked
+- PlayerOneWins
+- PlayerOneDontWins
+- GetNbOfPlayerOneWinsStep
+
+---
+
+Hand simplified notation
+
+--- 
+
+add five card limitation to some proofs
+
+---
+
+create score association to hand to use same proof mecanisme
+
+---
+
+
+

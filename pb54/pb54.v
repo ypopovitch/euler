@@ -196,15 +196,15 @@ Inductive EqCombo : Combo -> Combo -> Prop :=
 Inductive DirectlyAboveCombo : Combo -> Combo -> Prop :=
   | DirectlyAboveComboC : forall (cb1 cb2 : Combo),
     IsBetterCombo cb1 cb2 ->
-    (~ exists (cb3 : Combo), IsBetterCombo cb1 cb3 -> 
-      IsBetterCombo cb3 cb2) ->
+    (~ exists (cb3 : Combo), (IsBetterCombo cb1 cb3 /\ 
+      IsBetterCombo cb3 cb2)) ->
     DirectlyAboveCombo cb1 cb2.
 
 Inductive DirectlyBelowCombo : Combo -> Combo -> Prop :=
   | DirectlyBelowComboC : forall (cb1 cb2 : Combo),
     IsBetterCombo cb1 cb2 ->
-    (~ exists (cb3 : Combo), IsBetterCombo cb1 cb3 -> 
-      IsBetterCombo cb3 cb2) ->
+    (~ exists (cb3 : Combo), (IsBetterCombo cb1 cb3 /\ 
+      IsBetterCombo cb3 cb2)) ->
     DirectlyBelowCombo cb2 cb1.
 
 Definition IsPair (h : Hand) :=
